@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#BB86FC</color>
+    <color name="colorPrimaryVariant">#3700B3</color>
+    <color name="colorOnPrimary">#000000</color>
+
+    <color name="colorSecondary">#03DAC6</color>
+    <color name="colorOnSecondary">#000000</color>
+
+    <color name="colorSurface">#121212</color>
+    <color name="colorOnSurface">#FFFFFF</color>
+
+    <!-- Custom colors -->
+    <color name="teal_700">#03DAC5</color>
+    <color name="purple_500">#BB86FC</color>
+    <color name="black">#FFFFFF</color> <!-- Inverted for contrast -->
+    <color name="white">#000000</color> <!-- Inverted for contrast -->
+</resources>

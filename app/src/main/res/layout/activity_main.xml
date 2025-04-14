@@ -27,40 +27,49 @@
                 android:layout_height="wrap_content"
                 android:inputType="textUri" />
         </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Bluetooth Connect Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/connect_bt_btn"
-            style="@style/Widget.Material3.Button"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_marginTop="12dp"
-            android:text="🔗 Connect Bluetooth"
-            android:textColor="@android:color/white"
-            android:backgroundTint="@color/colorPrimary"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_bluetooth"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@android:color/white" />
+            android:gravity="center"
+            android:weightSum="2">
 
-        <!-- Load Feed Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/load_feed_btn"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/colorPrimary"
-            android:text="🎥 Load Camera Feed"
-            android:textColor="@android:color/white"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_camera_alt"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@android:color/white" />
+            <!-- Bluetooth Connect Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/connect_bt_btn"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🔗 Connect"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#6A5ACD"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_bluetooth"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@android:color/white"
+                android:layout_marginEnd="6dp" />
 
-        <!-- Camera View -->
+            <!-- Load Feed Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/load_feed_btn"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🎥 Load"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#6A5ACD"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_camera_alt"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@android:color/white"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="240dp"
@@ -70,7 +79,16 @@
             <WebView
                 android:id="@+id/camera_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent" >
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_x="98dp"
+                    android:layout_y="32dp"
+                    app:srcCompat="@drawable/camera_card_border" />
+            </WebView>
         </androidx.cardview.widget.CardView>
 
         <!-- Movement Controls Header -->
@@ -90,69 +108,67 @@
             android:layout_height="287dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/camera_card_border"
-            android:backgroundTint="@color/colorPrimaryVariant"
-            android:padding="16dp">
+            android:backgroundTint="#E6E6FA"
+        android:padding="16dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_up"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_marginTop="32dp"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="↑"
-                android:textColor="@android:color/white"
-                app:cornerRadius="50dp"
-                app:icon="@drawable/ic_up"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.465"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_up"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="#6A5ACD"
+            android:text="↑"
+            android:textColor="@android:color/white"
+            app:cornerRadius="50dp"
+            app:icon="@drawable/ic_up"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.465"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_left"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_marginStart="64dp"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="←"
-                android:textColor="@android:color/white"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_left"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="64dp"
+            android:backgroundTint="#6A5ACD"
+            android:text="←"
+            android:textColor="@android:color/white"
+            app:cornerRadius="32dp"
+            app:icon="@drawable/ic_left"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_up"
+            app:layout_constraintVertical_bias="0.0" />
 
-                app:cornerRadius="32dp"
-                app:icon="@drawable/ic_left"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_up"
-                app:layout_constraintVertical_bias="0.0" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_right"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="80dp"
+            android:backgroundTint="#6A5ACD"
+            android:text="→"
+            android:textColor="@android:color/white"
+            app:cornerRadius="32dp"
+            app:icon="@drawable/ic_right"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_up"
+            app:layout_constraintVertical_bias="0.0" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_right"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_marginEnd="80dp"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="→"
-                android:textColor="@android:color/white"
-                app:cornerRadius="32dp"
-                app:icon="@drawable/ic_right"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_up"
-                app:layout_constraintVertical_bias="0.0" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_down"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:backgroundTint="@color/colorPrimary"
-                android:text="↓"
-                android:textColor="@android:color/white"
-                app:cornerRadius="32dp"
-                app:icon="@drawable/ic_down"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.465"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_left" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_down"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:backgroundTint="#6A5ACD"
+            android:textColor="@android:color/white"
+            app:cornerRadius="32dp"
+            app:icon="@drawable/ic_down"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.465"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_left" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</LinearLayout>
+    </androidx.core.widget.NestedScrollView>

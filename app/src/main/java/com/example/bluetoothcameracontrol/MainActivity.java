@@ -9,29 +9,35 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 
 import android.webkit.WebView;
 import android.widget.*;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import android.content.pm.PackageManager;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
-import android.content.pm.PackageManager;
 
 public class MainActivity extends AppCompatActivity {
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket bluetoothSocket;
     private OutputStream outputStream;
-    private ListView listView;
     private WebView webView;
     private EditText ipInput;
-    private Button loadFeedBtn;
+    private MaterialButton loadFeedBtn, connectBtBtn;
     private final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    private boolean isBluetoothConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_main);
 
-        // Permissions for Android 12+
+        // Request Bluetooth permissions for Android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1001);
@@ -47,74 +53,90 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        WebView webView = findViewById(R.id.camera_view);
+        webView.setOnTouchListener((v, event) -> {
+            v.getParent().requestDisallowInterceptTouchEvent(true);
+            return false;
+        });
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        listView = findViewById(R.id.device_list);
         webView = findViewById(R.id.camera_view);
         ipInput = findViewById(R.id.ip_input);
         loadFeedBtn = findViewById(R.id.load_feed_btn);
+        connectBtBtn = findViewById(R.id.connect_bt_btn);
 
-        // Enable JavaScript for camera feed
+        // Enable JavaScript
         if (webView != null) {
             webView.getSettings().setJavaScriptEnabled(true);
         }
 
-        // Bluetooth setup
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
+        // Enable Bluetooth if off
         if (!bluetoothAdapter.isEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 1);
         }
 
-        // Load paired devices
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        for (BluetoothDevice device : pairedDevices) {
-            adapter.add(device.getName() + "\n" + device.getAddress());
-        }
+        // Connect Button Click
+        connectBtBtn.setOnClickListener(v -> showBluetoothDevicesPopup());
 
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            String info = adapter.getItem(position);
-            if (info != null) {
-                String address = info.substring(info.length() - 17);
-                connectToDevice(address);
-            }
-        });
-
-        // Movement buttons with press-and-hold behavior
-        setMovementButton(R.id.btn_forward, "R");
-        setMovementButton(R.id.btn_backward, "L");
+        // Movement Buttons
+        setMovementButton(R.id.btn_up, "R");
+        setMovementButton(R.id.btn_down, "L");
         setMovementButton(R.id.btn_left, "B");
         setMovementButton(R.id.btn_right, "F");
 
-        // Load camera feed
+        // Load Camera Feed
+        WebView finalWebView = webView;
         loadFeedBtn.setOnClickListener(v -> {
             String ip = ipInput.getText().toString().trim();
             if (!ip.isEmpty()) {
-                webView.loadUrl("http://" + ip);
+                finalWebView.loadUrl("http://" + ip);
             } else {
                 Toast.makeText(this, "Enter IP address", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void setMovementButton(int buttonId, String command) {
-        findViewById(buttonId).setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    sendCommand(command); // Start moving
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    sendCommand("S"); // Stop
-                    break;
-            }
-            return true;
-        });
+    private void showBluetoothDevicesPopup() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        if (pairedDevices.isEmpty()) {
+            Toast.makeText(this, "No paired Bluetooth devices found.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ArrayList<String> deviceNames = new ArrayList<>();
+        ArrayList<String> deviceAddresses = new ArrayList<>();
+
+        for (BluetoothDevice device : pairedDevices) {
+            deviceNames.add(device.getName());
+            deviceAddresses.add(device.getAddress());
+        }
+
+        String[] deviceArray = deviceNames.toArray(new String[0]);
+
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Select a Bluetooth Device")
+                .setItems(deviceArray, (dialog, which) -> {
+                    String address = deviceAddresses.get(which);
+                    connectToDevice(address);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void connectToDevice(String address) {
@@ -126,11 +148,32 @@ public class MainActivity extends AppCompatActivity {
             bluetoothSocket = device.createRfcommSocketToServiceRecord(BT_MODULE_UUID);
             bluetoothSocket.connect();
             outputStream = bluetoothSocket.getOutputStream();
+            isBluetoothConnected = true;
             Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(this, "Connection failed", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+    }
+
+    private void setMovementButton(int buttonId, String command) {
+        findViewById(buttonId).setOnTouchListener((v, event) -> {
+            if (!isBluetoothConnected) {
+                Toast.makeText(this, "Not connected to Bluetooth", Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    sendCommand(command);
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    sendCommand("S");
+                    break;
+            }
+            return true;
+        });
     }
 
     private void sendCommand(String cmd) {
@@ -140,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Toast.makeText(this, "Error sending command", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Toast.makeText(this, "Not connected to Bluetooth", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -150,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1001) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                recreate(); // Restart with permissions
+                recreate();
             } else {
                 Toast.makeText(this, "Bluetooth permission denied", Toast.LENGTH_SHORT).show();
             }

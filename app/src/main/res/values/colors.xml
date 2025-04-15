@@ -25,5 +25,7 @@
     <!-- Optional extra colors -->
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+    <color name="gold">#E2C93C</color>
+    <color name="slate_gray">#989898</color>
 
 </resources>

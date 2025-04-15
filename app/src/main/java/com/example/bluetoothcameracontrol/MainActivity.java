@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,9 +18,9 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import android.content.pm.PackageManager;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -28,6 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isBluetoothConnected = false;
     private SwitchCompat flashToggle;
+    private boolean isFlashOn = false; // Make it an instance variable
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize views
         cameraView = findViewById(R.id.camera_view);
-        // Ensure WebView touch events work properly
         cameraView.setOnTouchListener((v, event) -> {
             v.getParent().requestDisallowInterceptTouchEvent(true);
             return false;
@@ -67,13 +70,12 @@ public class MainActivity extends AppCompatActivity {
         ipInput = findViewById(R.id.ip_input);
         loadFeedBtn = findViewById(R.id.load_feed_btn);
         connectBtBtn = findViewById(R.id.connect_bt_btn);
-        flashToggle = findViewById(R.id.flash_toggle);
+        MaterialButton flashToggle = findViewById(R.id.flashToggle);
 
         // Enable JavaScript on the camera view WebView
-        if (cameraView != null) {
-            cameraView.getSettings().setJavaScriptEnabled(true);
-        }
+        cameraView.getSettings().setJavaScriptEnabled(true);
 
+        // Initialize Bluetooth
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
@@ -81,15 +83,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Enable Bluetooth if it is off
         if (!bluetoothAdapter.isEnabled()) {
             startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), 1);
         }
 
-        // Connect Button Click: Show dialog for paired Bluetooth devices
+        // Connect Button Click
         connectBtBtn.setOnClickListener(v -> showBluetoothDevicesPopup());
 
-        // Set Movement Buttons (using IDs in your layout)
+        // Movement Buttons
         setMovementButton(R.id.btn_up, "R");
         setMovementButton(R.id.btn_down, "L");
         setMovementButton(R.id.btn_left, "B");
@@ -105,45 +106,47 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Flash Toggle Switch: Send HTTP GET to ESP32 /flash/on or /flash/off
-        flashToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        // Flash Toggle Button (MaterialButton with icon)
+        flashToggle.setOnClickListener(v -> {
             String ip = ipInput.getText().toString().trim();
             if (ip.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Enter IP address first", Toast.LENGTH_SHORT).show();
-                flashToggle.setChecked(!isChecked); // revert the toggle
                 return;
             }
-            String flashUrl = "http://" + ip + "/flash/" + (isChecked ? "on" : "off");
+
+            isFlashOn = !isFlashOn;
+
+            // Update icon
+            flashToggle.setIconResource(isFlashOn ? R.drawable.ic_flash_on : R.drawable.ic_flash_off);
+
+            // Optional: Change background color
+            flashToggle.setBackgroundTintList(ContextCompat.getColorStateList(
+                    MainActivity.this,
+                    isFlashOn ? R.color.purple_500 : R.color.slate_gray // Replace with real colors
+            ));
+
+            // Send HTTP request to ESP32
+            String flashUrl = "http://" + ip + "/flash/" + (isFlashOn ? "on" : "off");
             toggleFlash(flashUrl);
         });
     }
 
-    // Sends an HTTP GET request to the given URL in a background thread.
-    private void toggleFlash(final String urlString) {
+    // Send HTTP GET request in background
+    private void toggleFlash(String url) {
         new Thread(() -> {
             try {
-                URL url = new URL(urlString);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setConnectTimeout(3000);
-                conn.setReadTimeout(3000);
-                int responseCode = conn.getResponseCode();
-                runOnUiThread(() -> {
-                    if (responseCode == 200) {
-                        Toast.makeText(MainActivity.this, "Flash command sent", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Failed to send flash command", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                conn.disconnect();
-            } catch (Exception e) {
+                URL flashURL = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection) flashURL.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(3000);
+                connection.setReadTimeout(3000);
+                connection.getResponseCode(); // Send the request
+                connection.disconnect();
+            } catch (IOException e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
-
     // Displays a pop-up to select a paired Bluetooth device.
     private void showBluetoothDevicesPopup() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {

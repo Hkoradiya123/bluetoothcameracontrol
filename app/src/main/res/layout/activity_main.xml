@@ -70,15 +70,29 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp" />
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/flash_toggle"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/flashToggle"
+                style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="⚡"
-                android:textColor="#000"
-                android:gravity="center"
-                android:layout_marginStart="3dp" />
+                android:text=""
+                android:backgroundTint="@color/slate_gray"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_flash_off"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@android:color/white" />
+
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:srcCompat="@drawable/camera_card_border" />
         </LinearLayout>
         <!-- Camera View Card -->
         <androidx.cardview.widget.CardView
